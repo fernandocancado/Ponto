@@ -1,16 +1,64 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Support.UI;
+using Ponto;
 using SeleniumExtras.WaitHelpers;
+using System.Diagnostics;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
 
 class Program
 {
+    private static string _chromeVersion { get; set; }
+    private static string _chromeDriverVersion { get; set; }
     static void Main(string[] args)
     {
-        new DriverManager().SetUpDriver(new ChromeConfig());
+        string chromePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe";
 
+        if (File.Exists(chromePath))
+        {
+            FileVersionInfo chromeVersionInfo = FileVersionInfo.GetVersionInfo(chromePath);
+            _chromeVersion = chromeVersionInfo.FileVersion!;
+            _chromeDriverVersion = GetChomeVersion.GetChromeVersion();
+
+            Console.WriteLine($"Versão do Chrome instalada: {_chromeVersion}");
+            Console.WriteLine($"Versão do ChromeDriver instalada: {_chromeDriverVersion}");
+        }
+        else
+        {
+            Console.WriteLine("O Google Chrome não está instalado no caminho padrão.");
+        }
+        if (_chromeVersion != _chromeDriverVersion)
+        {
+            try
+            {
+                new DriverManager().SetUpDriver(new ChromeConfig());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Erro ao configurar o ChromeDriver: " + ex.Message);
+                Console.WriteLine("Deseja continuar? (Y/N)");
+
+                string resposta = Console.ReadLine().ToUpper();
+
+                if (resposta == "Y")
+                {
+                    Console.WriteLine("Continuando...");
+                }
+                else if (resposta == "N")
+                {
+                    Console.WriteLine("Encerrando o programa...");
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    Console.WriteLine("Entrada inválida. Encerrando o programa...");
+                    Environment.Exit(0);
+                }
+            }
+        }
+
+        Console.WriteLine("Abrindo o Chrome...");
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.AddArgument("--start-maximized");
         IWebDriver driver = new ChromeDriver(chromeOptions);
@@ -24,11 +72,11 @@ class Program
 
             IWebElement loginField = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id='login']")));
             loginField.Clear();
-            loginField.SendKeys("");
+            loginField.SendKeys("0040");
 
             IWebElement passwordField = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//*[@id='password']/input")));
             passwordField.Clear();
-            passwordField.SendKeys("");
+            passwordField.SendKeys("1190");
 
             IWebElement registerButton = wait.Until(ExpectedConditions.ElementToBeClickable(By.XPath("//button[@aria-label='Registrar presença']")));
             registerButton.Click();
@@ -54,7 +102,7 @@ class Program
             else
             {
                 Console.WriteLine("Elemento de sucesso não foi encontrado dentro do tempo limite.");
-            }            
+            }
         }
         catch (Exception ex)
         {
