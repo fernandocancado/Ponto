@@ -32,7 +32,8 @@ class Program
         {
             try
             {
-                new DriverManager().SetUpDriver(new ChromeConfig());
+                new DriverManager().SetUpDriver(new ChromeConfig(), _chromeVersion); 
+                Console.WriteLine($"ChromeDriver configurado para a versão {_chromeVersion}");
             }
             catch (Exception ex)
             {
